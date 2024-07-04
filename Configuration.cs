@@ -12,6 +12,12 @@ namespace RandomClassSelector
         //public string ChannelToSend = "Channel to send chat to";
         //public string OAuthCode = "";
         //public bool TwitchEnabled = true;
+        public int MaxClassLevel = 100;
+        public bool PrintAllChoices = false;
+        public bool ChangeGSUsingShortname = false;
+        public bool ChangeGSUsingLongname = false;
+        public bool SuggestBLU = false;
+        public bool SuggestCraftersGatherers = false;
 
         private IDalamudPluginInterface pluginInterface;
 

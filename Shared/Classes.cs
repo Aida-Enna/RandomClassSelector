@@ -16,7 +16,6 @@ namespace Veda
         public const ushort Warn = 31;
         public const ushort Info = 37;
         public const ushort Twitch = 541;
-
     }
 
     public class PlayerData
