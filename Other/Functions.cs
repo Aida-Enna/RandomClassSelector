@@ -30,27 +30,6 @@ namespace Veda
             internal const string SanitiseString = "E8 ?? ?? ?? ?? EB 0A 48 8D 4C 24 ?? E8 ?? ?? ?? ?? 48 8D AE";
         }
 
-        public static bool ListContainsPlayer(List<PlayerData> PlayerList, string PlayerName, uint WorldId = 0)
-        {
-            int Result = 0;
-            if (WorldId == 0)
-            {
-                Result = PlayerList.FindIndex(x => x.Name == PlayerName);
-            }
-            else
-            {
-                Result = PlayerList.FindIndex(x => x.Name == PlayerName && x.HomeworldId == WorldId);
-            }
-            if (Result == -1)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
         public static void GetChatSignatures(ISigScanner sigScanner)
         {
             if (sigScanner.TryScanText(Signatures.SendChat, out var processChatBoxPtr))
