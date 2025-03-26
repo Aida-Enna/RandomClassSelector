@@ -9,8 +9,6 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Numerics;
-using TwitchLib.Api.Helix;
-using TwitchLib.Client.Models;
 using Veda;
 using Dalamud.Configuration;
 

@@ -1,8 +1,6 @@
 ﻿{
   "Author": "Aida Enna",
   "Name": "Random Class Selector",
-  "InternalName": "RandomClassSelector",
-  "AssemblyVersion": "1.0.0.3",
   "ApplicableVersion": "any",
   "Description": "Allows you to select a random class to do dailies/etc on.",
   "Punchline": "Can't decide what class to work on today? Let the plugin decide for you!",
@@ -12,6 +10,5 @@
     "class",
     "aida"
   ],
-  "DalamudApiLevel": 11,
   "IconUrl": "https://i.imgur.com/DGAUU2e.png"
 }
