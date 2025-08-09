@@ -255,6 +255,7 @@ namespace RandomClassSelector
             List<string> LevelsUnderCap = new List<string>();
             foreach (int level in Levels)
             {
+
                 if (level >= MaxLevel) { ClassCount++; continue; } //They're level X or higher, ignore them
                 if (level == 0) { ClassCount++; continue; } //Not unlocked, assumedly?
                 if (ClassCount > 6 & ClassCount < 18 & !PluginConfig.SuggestCraftersGatherers) { ClassCount++; continue; } //Crafting or Gathering classes, become a toggle later
@@ -263,6 +264,7 @@ namespace RandomClassSelector
                 LevelsUnderCap.Add(GetClassNameByIndex(ClassCount, level) + " (" + level + ")");
 
                 //PluginLog.Debug("Class " + ClassCount + ": " + level.ToString());
+                if (ClassCount == 31) { break; }
                 ClassCount++;
             }
             return LevelsUnderCap;
@@ -426,7 +428,7 @@ namespace RandomClassSelector
                     return "PCT";
 
                 default:
-                    return "Unknown??";
+                    return "Unknown?? (index: " + index + ")";
             }
         }
 
