@@ -145,7 +145,7 @@ namespace RandomClassSelector
                     else if (Regex.Match(arg, RoleFilterRegex).Success)
                     {
                         RoleFilter = true;
-                        RolesToInclude = arg;
+                        RolesToInclude = arg.ToLower();
 
                         continue;
                     }
