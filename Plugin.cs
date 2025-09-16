@@ -134,8 +134,7 @@ namespace RandomClassSelector
             if (!string.IsNullOrWhiteSpace(args))
             {
                 //Chat.Print($"args: {args}");
-                string[] argArray = args.Split(' ');
-                foreach (string arg in argArray)
+                foreach (string arg in args.Split(' '))
                 {
                     //Chat.Print($"arg: {arg}");
                     if (arg.Equals("capped", StringComparison.CurrentCultureIgnoreCase) || arg.Equals("max", StringComparison.CurrentCultureIgnoreCase))
@@ -153,7 +152,7 @@ namespace RandomClassSelector
                 }
             }
 
-            //Chat.Print(CappedClassRoll ? $"Level Capped Roll..." : $"Rolling for class at or under level {PluginConfig.MaxClassLevel}...");
+
             List<string> ClassesToLevel = GetClassesToRoll(CappedClassRoll, RoleFilter, RolesToInclude);
 
             int SelectedClass = RNGenerator.Next(0, ClassesToLevel.Count());
@@ -180,6 +179,13 @@ namespace RandomClassSelector
                     AllClassesDebug += ClassName + " ";
                 }
                 Chat.Print(AllClassesDebug);
+
+                Chat.Print(CappedClassRoll ? $"You did a level capped roll..." : $"Roll was for class at or under level {PluginConfig.MaxClassLevel}...");
+                if (RoleFilter)
+                {
+                    Chat.Print($"Role Filter used: {RolesToInclude}");
+                }
+
             }
             if (PluginConfig.ChangeGSUsingShortname)
             {
