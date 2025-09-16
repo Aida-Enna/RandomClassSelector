@@ -13,6 +13,7 @@ namespace RandomClassSelector
         //public string OAuthCode = "";
         //public bool TwitchEnabled = true;
         public int MaxClassLevel = 100;
+        public int LevelCap = 100;
         public bool PrintAllChoices = false;
         public bool ChangeGSUsingShortname = false;
         public bool ChangeGSUsingLongname = false;
