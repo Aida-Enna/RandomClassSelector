@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Xml;
 using Veda;
 
@@ -38,6 +39,58 @@ namespace RandomClassSelector
         public string PreviousWorkingChannel;
         public bool SuccessfullyJoined;
         private Random RNGenerator = new Random();
+
+
+        private readonly string RoleFilterRegex = @"^(?!.*(.).*\1)[thmpc]{0,5}$";
+
+        #region Role Collections
+        private readonly List<string> Tanks =
+       [
+            "GLD",
+            "MRD",
+            "PLD",
+            "WAR",
+            "DRK",
+            "GNB"
+       ];
+        private readonly List<string> Healers =
+        [
+            "CNJ",
+            "WHM",
+            "SCH",
+            "AST",
+            "SGE"
+        ];
+        private readonly List<string> Melee =
+        [
+            "PGL",
+            "LNC",
+            "ROG",
+            "MNK",
+            "DRG",
+            "SAM",
+            "SAM",
+            "RPR",
+            "VPR"
+        ];
+        private readonly List<string> PhysRanged =
+        [
+            "ARC",
+            "BRD",
+            "DNC",
+            "MCH"
+        ];
+        private readonly List<string> Casters =
+        [
+            "THM",
+            "ACN",
+            "BLM",
+            "SMN",
+            "RDM",
+            "PCT",
+            "BLU"
+        ];
+        #endregion
 
         public Plugin(IDalamudPluginInterface pluginInterface, IChatGui chat, IPartyList partyList, ICommandManager commands, ISigScanner sigScanner)
         {
@@ -72,15 +125,41 @@ namespace RandomClassSelector
         }
 
         [Command("/rndc")]
-        [HelpMessage("Selects a random class")]
+        [HelpMessage("Selects a random class. Use argument 'max' or 'capped' to select a randomly level capped class. Include specific roles using 't' for tanks, 'h' for healers, 'm' for Melee, 'p' for PhysRanged, 'c' for Casters (ex: 'phc' will give all applicable PhysRaned, Healers, and Casters)")]
         public unsafe void RollRandomClass(string command, string args)
         {
-            List<string> ClassesToLevel = GetClassesUnderLevel(PluginConfig.MaxClassLevel);
+            bool CappedClassRoll = false;
+            bool RoleFilter = false;
+            string RolesToInclude = "";
+            if (!string.IsNullOrWhiteSpace(args))
+            {
+                //Chat.Print($"args: {args}");
+                foreach (string arg in args.Split(' '))
+                {
+                    //Chat.Print($"arg: {arg}");
+                    if (arg.Equals("capped", StringComparison.CurrentCultureIgnoreCase) || arg.Equals("max", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        CappedClassRoll = true;
+                        continue;
+                    }
+                    else if (Regex.Match(arg, RoleFilterRegex).Success)
+                    {
+                        RoleFilter = true;
+                        RolesToInclude = arg.ToLower();
+
+                        continue;
+                    }
+                }
+            }
+
+
+            List<string> ClassesToLevel = GetClassesToRoll(CappedClassRoll, RoleFilter, RolesToInclude);
+
             int SelectedClass = RNGenerator.Next(0, ClassesToLevel.Count());
             string SelectedClassString = ClassesToLevel[SelectedClass];
             if (SelectedClassString.Contains("SMN/SCH"))
             {
-                switch(RNGenerator.Next(0,2))
+                switch (RNGenerator.Next(0, 2))
                 {
                     case 0:
                         SelectedClassString = SelectedClassString.Replace("SMN/", "");
@@ -90,6 +169,7 @@ namespace RandomClassSelector
                         break;
                 }
             }
+
             Chat.Print("Your randomly selected class is: " + SelectedClassString);
             if (PluginConfig.PrintAllChoices)
             {
@@ -99,6 +179,13 @@ namespace RandomClassSelector
                     AllClassesDebug += ClassName + " ";
                 }
                 Chat.Print(AllClassesDebug);
+
+                Chat.Print(CappedClassRoll ? $"You did a level capped roll..." : $"Roll was for class at or under level {PluginConfig.MaxClassLevel}...");
+                if (RoleFilter)
+                {
+                    Chat.Print($"Role Filter used: {RolesToInclude}");
+                }
+
             }
             if (PluginConfig.ChangeGSUsingShortname)
             {
@@ -108,7 +195,7 @@ namespace RandomClassSelector
             if (PluginConfig.ChangeGSUsingLongname)
             {
                 PluginLog.Debug("Sending " + "/gs change " + GetFullClassName(SelectedClassString.Split(' ')[0]));
-                Functions.Send("/gs change \"" + GetFullClassName(SelectedClassString.Split(' ')[0]) + "\""); 
+                Functions.Send("/gs change \"" + GetFullClassName(SelectedClassString.Split(' ')[0]) + "\"");
             }
         }
 
@@ -247,7 +334,7 @@ namespace RandomClassSelector
             }
         }
 
-        public unsafe List<string> GetClassesUnderLevel(int MaxLevel)
+        public unsafe List<string> GetClassesToRoll(bool CappedClassRoll, bool RoleFilter, string RolesToInclude)
         {
             var playerStatePtr = PlayerState.Instance();
             var Levels = playerStatePtr->ClassJobLevels;
@@ -255,13 +342,55 @@ namespace RandomClassSelector
             List<string> LevelsUnderCap = new List<string>();
             foreach (int level in Levels)
             {
-
-                if (level >= MaxLevel) { ClassCount++; continue; } //They're level X or higher, ignore them
+                if (CappedClassRoll)// Do the roll on capped classes only instead of level checking 
+                {
+                    if (level != PluginConfig.LevelCap) { ClassCount++; continue; } // They're not capped
+                }
+                else
+                {
+                    if (level >= PluginConfig.MaxClassLevel) { ClassCount++; continue; } //They're level X or higher, ignore them
+                }
                 if (level == 0) { ClassCount++; continue; } //Not unlocked, assumedly?
                 if (ClassCount > 6 & ClassCount < 18 & !PluginConfig.SuggestCraftersGatherers) { ClassCount++; continue; } //Crafting or Gathering classes, become a toggle later
                 if (ClassCount == 25 & !PluginConfig.SuggestBLU) { ClassCount++; continue; } //Blue Mage, become a toggle later
 
-                LevelsUnderCap.Add(GetClassNameByIndex(ClassCount, level) + " (" + level + ")");
+                string ClassName = GetClassNameByIndex(ClassCount, level);
+
+                if (RoleFilter)//Only add the class if it is in the filter
+                {
+                    //Handle SMN/SCH Separately since they're in different roles
+                    if (ClassName == "SMN/SCH")
+                    {
+                        if (RolesToInclude.Contains('h')) { LevelsUnderCap.Add("SCH" + " (" + level + ")"); }
+
+                        if (RolesToInclude.Contains('c')) { LevelsUnderCap.Add("SMN" + " (" + level + ")"); }
+                    }
+
+                    if (RolesToInclude.Contains('t') && Tanks.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                    }
+                    if (RolesToInclude.Contains('h') && Healers.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                    }
+                    if (RolesToInclude.Contains('m') && Melee.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                    }
+                    if (RolesToInclude.Contains('p') && PhysRanged.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                    }
+                    if (RolesToInclude.Contains('c') && Casters.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                    }
+                }
+                else //No filter just add it
+                {
+                    LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                }
 
                 //PluginLog.Debug("Class " + ClassCount + ": " + level.ToString());
                 if (ClassCount == 31) { break; }
