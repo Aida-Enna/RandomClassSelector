@@ -1,27 +1,39 @@
-﻿using Dalamud.Game.ClientState.Party;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Configuration;
+using Dalamud.Game;
+using Dalamud.Game.ClientState.Party;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
-using Dalamud.Game;
+using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
-using Dalamud.Bindings.ImGui;
 using ImGuiScene;
 using System;
 using System.Diagnostics;
 using System.Net;
 using System.Numerics;
 using Veda;
-using Dalamud.Configuration;
 
 namespace RandomClassSelector
 {
-    public class PluginUI
+    public class ConfigWindow : Window, IDisposable
     {
+        // We give this window a constant ID using ###.
+        // This allows for labels to be dynamic, like "{FPS Counter}fps###XYZ counter window",
+        // and the window ID will always be "###XYZ counter window" for ImGui
+        public ConfigWindow(Plugin plugin) : base("A Wonderful Configuration Window###With a constant ID")
+        {
+            Flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
+                    ImGuiWindowFlags.NoScrollWithMouse;
+        }
+
+        public void Dispose() { }
+
         public bool IsVisible;
         public bool ShowSupport;
-        public void Draw()
+        public override void Draw()
         {
-            if (!IsVisible || !ImGui.Begin("Random Class Selector Config", ref IsVisible, ImGuiWindowFlags.AlwaysAutoResize))
-                return;
+            //if (!IsVisible || !ImGui.Begin("Random Class Selector Config", ref IsVisible, ImGuiWindowFlags.AlwaysAutoResize))
+            //    return;
             ImGui.Text("Only suggest classes under level: ");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(40);
@@ -37,7 +49,7 @@ namespace RandomClassSelector
             if (ImGui.Button("Save"))
             {
                 Plugin.PluginConfig.Save();
-                this.IsVisible = false;
+                this.Toggle();
             }
 
             ImGui.SameLine();
@@ -74,7 +86,6 @@ namespace RandomClassSelector
                 }
                 ImGui.PopStyleColor();
             }
-            ImGui.End();
         }
     }
 }

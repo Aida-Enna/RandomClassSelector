@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game;
 using Dalamud.IoC;
+using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -16,8 +17,6 @@ namespace RandomClassSelector
 {
     public class Plugin : IDalamudPlugin
     {
-        public string Name => "Random Class Selector";
-
         [PluginService] public static IDalamudPluginInterface PluginInterface { get; set; }
         [PluginService] public static ICommandManager Commands { get; set; }
         [PluginService] public static ICondition Conditions { get; set; }
@@ -33,11 +32,10 @@ namespace RandomClassSelector
 
         public static Configuration PluginConfig { get; set; }
         private PluginCommandManager<Plugin> CommandManager;
-        private PluginUI ui;
+        public readonly WindowSystem WindowSystem = new("Random Class Selector");
+        private ConfigWindow ConfigWindow { get; init; }
 
         public static bool FirstRun = true;
-        public string PreviousWorkingChannel;
-        public bool SuccessfullyJoined;
         private Random RNGenerator = new Random();
 
 
@@ -103,13 +101,12 @@ namespace RandomClassSelector
             PluginConfig = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
             PluginConfig.Initialize(PluginInterface);
 
-            ui = new PluginUI();
-            PluginInterface.UiBuilder.Draw += new System.Action(ui.Draw);
-            PluginInterface.UiBuilder.OpenConfigUi += () =>
-            {
-                PluginUI ui = this.ui;
-                ui.IsVisible = !ui.IsVisible;
-            };
+            ConfigWindow = new ConfigWindow(this);
+
+            WindowSystem.AddWindow(ConfigWindow);
+
+            PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
+            PluginInterface.UiBuilder.OpenConfigUi += () => { ConfigWindow.Toggle(); };
 
             // Load all of our commands
             CommandManager = new PluginCommandManager<Plugin>(this, commands);
@@ -121,7 +118,7 @@ namespace RandomClassSelector
         [HelpMessage("Shows RandomClassSelector configuration options")]
         public void ShowTwitchOptions(string command, string args)
         {
-            ui.IsVisible = !ui.IsVisible;
+            ConfigWindow.Toggle();
         }
 
         [Command("/rndc")]
@@ -571,12 +568,8 @@ namespace RandomClassSelector
 
             PluginInterface.SavePluginConfig(PluginConfig);
 
-            PluginInterface.UiBuilder.Draw -= ui.Draw;
-            PluginInterface.UiBuilder.OpenConfigUi -= () =>
-            {
-                PluginUI ui = this.ui;
-                ui.IsVisible = !ui.IsVisible;
-            };
+            PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
+            PluginInterface.UiBuilder.OpenConfigUi -= () => { ConfigWindow.Toggle(); };
         }
 
         public void Dispose()
