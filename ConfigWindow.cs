@@ -37,7 +37,7 @@ namespace RandomClassSelector
             ImGui.Text("Only suggest classes under level: ");
             ImGui.SameLine();
             ImGui.SetNextItemWidth(40);
-            ImGui.DragInt("a", ref Plugin.PluginConfig.MaxClassLevel, 1, 1, 201);
+            ImGui.DragInt("####MaxLevel", ref Plugin.PluginConfig.MaxClassLevel, 1, 2, 201);
             ImGui.Checkbox("Print all classes it could have picked", ref Plugin.PluginConfig.PrintAllChoices);
             ImGui.Checkbox("Swap to gearset using short name", ref Plugin.PluginConfig.ChangeGSUsingShortname);
             ImGui.Text("When a random class is selected, it will try to swap to a\ngearset corresponding to the short name of the class (eg. PLD)");
