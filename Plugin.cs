@@ -69,14 +69,18 @@ namespace RandomClassSelector
             "SAM",
             "SAM",
             "RPR",
-            "VPR"
+            "VPR",
+            "NIN"
         ];
         private readonly List<string> PhysRanged =
         [
             "ARC",
+            "ROG",
+            "NIN",
             "BRD",
             "DNC",
-            "MCH"
+            "MCH", 
+            "VPR"
         ];
         private readonly List<string> Casters =
         [
