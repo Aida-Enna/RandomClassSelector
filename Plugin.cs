@@ -62,8 +62,7 @@ namespace RandomClassSelector
         private readonly List<string> Melee =
         [
             "PGL",
-            "LNC",
-            "ROG",
+            "LNC",        
             "MNK",
             "DRG",
             "SAM",
@@ -74,6 +73,8 @@ namespace RandomClassSelector
         private readonly List<string> PhysRanged =
         [
             "ARC",
+            "ROG",
+            "NIN",
             "BRD",
             "DNC",
             "MCH"
