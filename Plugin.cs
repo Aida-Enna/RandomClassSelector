@@ -69,7 +69,8 @@ namespace RandomClassSelector
             "SAM",
             "SAM",
             "RPR",
-            "VPR"
+            "VPR",
+            "NIN"
         ];
         private readonly List<string> PhysRanged =
         [
@@ -87,6 +88,16 @@ namespace RandomClassSelector
             "RDM",
             "PCT",
             "BLU"
+        ];
+        private readonly List<string> DexDPS =
+        [
+            "ARC",
+            "ROG",
+            "BRD",
+            "DNC",
+            "MCH",
+            "NIN",
+            "VPR"
         ];
         #endregion
 
@@ -383,6 +394,9 @@ namespace RandomClassSelector
                     {
                         LevelsUnderCap.Add(ClassName + " (" + level + ")");
                     }
+                    if (RolesToInclude.Contains('d') && DexDPS.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
                 }
                 else //No filter just add it
                 {
