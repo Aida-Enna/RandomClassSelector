@@ -64,6 +64,7 @@ namespace RandomClassSelector
             "PGL",
             "LNC",
             "ROG",
+            "NIN",
             "MNK",
             "DRG",
             "SAM",
@@ -87,6 +88,16 @@ namespace RandomClassSelector
             "RDM",
             "PCT",
             "BLU"
+        ];
+        private readonly List<string> DexDPS =
+        [
+           "ARC",
+            "ROG",
+            "BRD",
+            "DNC",
+            "MCH",
+            "NIN",
+            "VPR"
         ];
         #endregion
 
@@ -122,7 +133,7 @@ namespace RandomClassSelector
         }
 
         [Command("/rndc")]
-        [HelpMessage("Selects a random class. Use argument 'max' or 'capped' to select a randomly level capped class. Include specific roles using 't' for tanks, 'h' for healers, 'm' for Melee, 'p' for PhysRanged, 'c' for Casters (ex: 'phc' will give all applicable PhysRaned, Healers, and Casters)")]
+        [HelpMessage("Selects a random class. Use argument 'max' or 'capped' to select a randomly level capped class. You can optionally include specific roles using 't' for Tanks, 'h' for Healers, 'm' for Melee, 'p' for PhysRanged, 'c' for Casters, and 'd' for Dex (ex: 'phc' will give all applicable PhysRanged, Healers, and Casters)")]
         public unsafe void RollRandomClass(string command, string args)
         {
             try
@@ -394,6 +405,10 @@ namespace RandomClassSelector
                         LevelsUnderCap.Add(ClassName + " (" + level + ")");
                     }
                     if (RolesToInclude.Contains('c') && Casters.Contains(ClassName))
+                    {
+                        LevelsUnderCap.Add(ClassName + " (" + level + ")");
+                    }
+                    if (RolesToInclude.Contains('d') && DexDPS.Contains(ClassName))
                     {
                         LevelsUnderCap.Add(ClassName + " (" + level + ")");
                     }
