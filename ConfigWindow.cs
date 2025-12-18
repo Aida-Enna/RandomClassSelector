@@ -6,7 +6,6 @@ using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
-using ImGuiScene;
 using System;
 using System.Diagnostics;
 using System.Net;
