@@ -125,74 +125,88 @@ namespace RandomClassSelector
         [HelpMessage("Selects a random class. Use argument 'max' or 'capped' to select a randomly level capped class. Include specific roles using 't' for tanks, 'h' for healers, 'm' for Melee, 'p' for PhysRanged, 'c' for Casters (ex: 'phc' will give all applicable PhysRaned, Healers, and Casters)")]
         public unsafe void RollRandomClass(string command, string args)
         {
-            bool CappedClassRoll = false;
-            bool RoleFilter = false;
-            string RolesToInclude = "";
-            if (!string.IsNullOrWhiteSpace(args))
+            try
             {
-                //Chat.Print($"args: {args}");
-                foreach (string arg in args.Split(' '))
+                bool CappedClassRoll = false;
+                bool RoleFilter = false;
+                string RolesToInclude = "";
+                if (!string.IsNullOrWhiteSpace(args))
                 {
-                    //Chat.Print($"arg: {arg}");
-                    if (arg.Equals("capped", StringComparison.CurrentCultureIgnoreCase) || arg.Equals("max", StringComparison.CurrentCultureIgnoreCase))
+                    //Chat.Print($"args: {args}");
+                    foreach (string arg in args.Split(' '))
                     {
-                        CappedClassRoll = true;
-                        continue;
+                        //Chat.Print($"arg: {arg}");
+                        if (arg.Equals("capped", StringComparison.CurrentCultureIgnoreCase) || arg.Equals("max", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            CappedClassRoll = true;
+                            continue;
+                        }
+                        else if (Regex.Match(arg, RoleFilterRegex).Success)
+                        {
+                            RoleFilter = true;
+                            RolesToInclude = arg.ToLower();
+
+                            continue;
+                        }
                     }
-                    else if (Regex.Match(arg, RoleFilterRegex).Success)
+                }
+
+
+                List<string> ClassesToLevel = GetClassesToRoll(CappedClassRoll, RoleFilter, RolesToInclude);
+
+                if (ClassesToLevel.Count() == 0)
+                {
+                    Chat.Print("[RND] No classes matched your settings. Please check them and try again.");
+                    return;
+                }    
+
+                int SelectedClass = RNGenerator.Next(0, ClassesToLevel.Count());
+                string SelectedClassString = ClassesToLevel[SelectedClass];
+                if (SelectedClassString.Contains("SMN/SCH"))
+                {
+                    switch (RNGenerator.Next(0, 2))
                     {
-                        RoleFilter = true;
-                        RolesToInclude = arg.ToLower();
-
-                        continue;
+                        case 0:
+                            SelectedClassString = SelectedClassString.Replace("SMN/", "");
+                            break;
+                        case 1:
+                            SelectedClassString = SelectedClassString.Replace("/SCH", "");
+                            break;
                     }
                 }
-            }
 
-
-            List<string> ClassesToLevel = GetClassesToRoll(CappedClassRoll, RoleFilter, RolesToInclude);
-
-            int SelectedClass = RNGenerator.Next(0, ClassesToLevel.Count());
-            string SelectedClassString = ClassesToLevel[SelectedClass];
-            if (SelectedClassString.Contains("SMN/SCH"))
-            {
-                switch (RNGenerator.Next(0, 2))
+                Chat.Print("[RND] Your randomly selected class is: " + SelectedClassString);
+                if (PluginConfig.PrintAllChoices)
                 {
-                    case 0:
-                        SelectedClassString = SelectedClassString.Replace("SMN/", "");
-                        break;
-                    case 1:
-                        SelectedClassString = SelectedClassString.Replace("/SCH", "");
-                        break;
+                    string AllClassesDebug = "[RND] Your choices were: "; //Make toggleable
+                    foreach (string ClassName in ClassesToLevel)
+                    {
+                        AllClassesDebug += ClassName + " ";
+                    }
+                    Chat.Print(AllClassesDebug);
+
+                    Chat.Print(CappedClassRoll ? $"[RND] You did a level capped roll..." : $"[RND] Roll was for class at or under level {PluginConfig.MaxClassLevel}...");
+                    if (RoleFilter)
+                    {
+                        Chat.Print($"[RND] Role Filter used: {RolesToInclude}");
+                    }
+
+                }
+                if (PluginConfig.ChangeGSUsingShortname)
+                {
+                    PluginLog.Debug("Sending " + "/gs change \"" + SelectedClassString.Split(' ')[0] + "\"");
+                    Functions.Send("/gs change \"" + SelectedClassString.Split(' ')[0] + "\"");
+                }
+                if (PluginConfig.ChangeGSUsingLongname)
+                {
+                    PluginLog.Debug("Sending " + "/gs change " + GetFullClassName(SelectedClassString.Split(' ')[0]));
+                    Functions.Send("/gs change \"" + GetFullClassName(SelectedClassString.Split(' ')[0]) + "\"");
                 }
             }
-
-            Chat.Print("Your randomly selected class is: " + SelectedClassString);
-            if (PluginConfig.PrintAllChoices)
+            catch(Exception f)
             {
-                string AllClassesDebug = "Your choices were: "; //Make toggleable
-                foreach (string ClassName in ClassesToLevel)
-                {
-                    AllClassesDebug += ClassName + " ";
-                }
-                Chat.Print(AllClassesDebug);
+                Chat.Print("[RND Exception] " + f.ToString());
 
-                Chat.Print(CappedClassRoll ? $"You did a level capped roll..." : $"Roll was for class at or under level {PluginConfig.MaxClassLevel}...");
-                if (RoleFilter)
-                {
-                    Chat.Print($"Role Filter used: {RolesToInclude}");
-                }
-
-            }
-            if (PluginConfig.ChangeGSUsingShortname)
-            {
-                PluginLog.Debug("Sending " + "/gs change \"" + SelectedClassString.Split(' ')[0] + "\"");
-                Functions.Send("/gs change \"" + SelectedClassString.Split(' ')[0] + "\"");
-            }
-            if (PluginConfig.ChangeGSUsingLongname)
-            {
-                PluginLog.Debug("Sending " + "/gs change " + GetFullClassName(SelectedClassString.Split(' ')[0]));
-                Functions.Send("/gs change \"" + GetFullClassName(SelectedClassString.Split(' ')[0]) + "\"");
             }
         }
 
